@@ -8,19 +8,19 @@ import (
 	"image/gif"
 	"image/jpeg"
 	"image/png"
+	"io"
 	"net/http"
 	"net/url"
-    "io"
 	"strconv"
 	"strings"
 )
 
 type Image struct {
 	Width, Height int64
-    Blur float64
-	URL                 *url.URL
-	Format              string
-	Data                image.Image
+	Blur          float64
+	URL           *url.URL
+	Format        string
+	Data          image.Image
 }
 
 // Checks if the format is valid or not.
@@ -33,7 +33,7 @@ func ValidFormat(format string) bool {
 func NewImage(values url.Values) (*Image, error) {
 	var w, h, b, u string
 	var width, height int64
-    var blur float64
+	var blur float64
 
 	w = values.Get("w")
 	h = values.Get("h")
@@ -131,31 +131,31 @@ func (i *Image) scale() error {
 
 // Applies the needed transformations.
 func (i *Image) apply() error {
-    var err error
-    
-    if i.Width > 0 && i.Width > 0 {
-        err = i.scale()
-        if err != nil {
-            return err
-        }
-    }
-    
-    if i.Blur > 0 {
-        err = i.scale()
-        if err != nil {
-            return err
-        }
-    }
-    
-    return nil
+	var err error
+
+	if i.Width > 0 && i.Width > 0 {
+		err = i.scale()
+		if err != nil {
+			return err
+		}
+	}
+
+	if i.Blur > 0 {
+		err = i.scale()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
-// Writes the transformed image to the specified writer. 
+// Writes the transformed image to the specified writer.
 func (i *Image) Write(w io.Writer) error {
-    err := i.apply()
-    if err != nil {
-        return err
-    }
+	err := i.apply()
+	if err != nil {
+		return err
+	}
 
 	switch i.Format {
 	case "png":

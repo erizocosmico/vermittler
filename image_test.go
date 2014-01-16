@@ -2,23 +2,23 @@ package vermittler
 
 import (
 	"net/url"
+	"os"
 	"testing"
-    "os"
 )
 
 func values() url.Values {
 	query := "url=aHR0cDovL2dvbGFuZy5vcmcvZG9jL2dvcGhlci9nb3BoZXJidy5wbmc=&w=150&h=200&b=10"
-    
+
 	values, err := url.ParseQuery(query)
 	if err != nil {
 		panic("query `" + query + "` is not a valid query string.")
 	}
-    
-    return values
+
+	return values
 }
 
 func TestNewImageimg(t *testing.T) {
-    imageUrl := "http://golang.org/doc/gopher/gopherbw.png"
+	imageUrl := "http://golang.org/doc/gopher/gopherbw.png"
 	values := values()
 
 	img, err := NewImage(values)
@@ -45,38 +45,38 @@ func TestNewImageimg(t *testing.T) {
 	if img.Format != "png" {
 		t.Errorf("Expecting format `%s` to be `%s`", img.Format, "png")
 	}
-    
-    // TODO: Test .Data somehow
+
+	// TODO: Test .Data somehow
 }
 
 func TestWrite(t *testing.T) {
-    values := values()
-    
+	values := values()
+
 	img, err := NewImage(values)
 	if err != nil {
 		t.Fatal(err)
 	}
-    
-    f, err := os.Create("test."+img.Format)
-    if err != nil {
-        t.Fatal(err)
-    }
-    
-    err = img.Write(f)
-    if err != nil {
-        t.Fatal(err)
-    }
-    
-    err = os.Remove("test."+img.Format)
-    if err != nil {
-        t.Fatal(err)
-    }
+
+	f, err := os.Create("test." + img.Format)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = img.Write(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = os.Remove("test." + img.Format)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestBlur(t *testing.T) {
-    // TODO: Implement
+	// TODO: Implement
 }
 
 func TestScale(t *testing.T) {
-    // TODO: Implement
+	// TODO: Implement
 }
