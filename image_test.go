@@ -38,8 +38,8 @@ func TestNewImageimg(t *testing.T) {
 		t.Errorf("Expecting height `%d` to be `%d`", img.Height, 200)
 	}
 
-	if img.Blur != 10 {
-		t.Errorf("Expecting blur `%d` to be `%d`", img.Blur, 10)
+	if img.Blur != 10.0 {
+		t.Errorf("Expecting blur `%f` to be `%f`", img.Blur, 10.0)
 	}
 
 	if img.Format != "png" {
