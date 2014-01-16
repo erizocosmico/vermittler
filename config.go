@@ -14,7 +14,7 @@ type Config struct {
 func NewConfig() *Config {
 	return &Config{
 		CacheEnabled: true,
-		CachePath:    "/Users/Mik3/Desktop",
+		CachePath:    "/path/to/cache/dir",
 		Port:         "8888",
 	}
 }
