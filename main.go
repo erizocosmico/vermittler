@@ -2,16 +2,15 @@ package main
 
 import (
 	"encoding/base64"
-	"io/ioutil"
 	"net/http"
-	"os"
-	"strings"
 )
 
+// Vermittler handler
 type Vermittler struct {
 	Cfg *Config
 }
 
+// Serves the app
 func (v Vermittler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var img *Image
 	var err error
@@ -22,20 +21,7 @@ func (v Vermittler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	imageExists := false
 	if v.Cfg.CacheEnabled {
-		files, err := ioutil.ReadDir(v.Cfg.CachePath)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		for _, file := range files {
-			fileParts := strings.Split(file.Name(), ".")
-			if fileParts[0] == filename {
-				imageExists = true
-				format = fileParts[1]
-				break
-			}
-		}
+		imageExists, format, err = FileInCache(filename, v.Cfg.CachePath)
 	}
 
 	if !imageExists || !v.Cfg.CacheEnabled {
@@ -46,6 +32,7 @@ func (v Vermittler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
+		// For some reason OS X does weird things with .DS_Store
 		if format == "DS_Store" {
 			return
 		}
@@ -58,19 +45,7 @@ func (v Vermittler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if v.Cfg.CacheEnabled && !imageExists {
-		go (func() {
-			f, err := os.Create(v.Cfg.CachePath + "/" + filename + "." + img.Format)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-
-			err = img.Write(f)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		})()
+		go CacheFile(v.Cfg.CachePath+"/"+filename+"."+img.Format, img)
 	}
 
 	w.Header().Add("Content-Type", "image/"+img.Format)
