@@ -11,6 +11,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -27,6 +28,47 @@ type Image struct {
 // TODO: Add webp format support
 func ValidFormat(format string) bool {
 	return format == "png" || format == "jpeg" || format == "gif"
+}
+
+// Returns an Image given a filename
+func NewImageFromFile(filename string) (*Image, error) {
+	var data image.Image
+	var err error
+
+	img := &Image{
+		Width:  -1,
+		Height: -1,
+		Blur:   -1.0,
+	}
+
+	f, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	formatStrings := strings.Split(filename, ".")
+	img.Format = formatStrings[len(formatStrings)-1]
+
+	switch img.Format {
+	case "png":
+		data, err = png.Decode(f)
+		break
+
+	case "jpeg":
+		data, err = jpeg.Decode(f)
+		break
+
+	case "gif":
+		data, err = gif.Decode(f)
+		break
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	img.Data = data
+
+	return img, nil
 }
 
 // Returns the image data for the specified parameters in the query string.
@@ -130,7 +172,7 @@ func (i *Image) scale() error {
 }
 
 // Applies the needed transformations.
-func (i *Image) apply() error {
+func (i *Image) Apply() error {
 	var err error
 
 	if i.Width > 0 && i.Width > 0 {
@@ -152,10 +194,7 @@ func (i *Image) apply() error {
 
 // Writes the transformed image to the specified writer.
 func (i *Image) Write(w io.Writer) error {
-	err := i.apply()
-	if err != nil {
-		return err
-	}
+	var err error
 
 	switch i.Format {
 	case "png":
