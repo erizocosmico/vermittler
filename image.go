@@ -1,4 +1,4 @@
-package vermittler
+package main
 
 import (
 	"code.google.com/p/graphics-go/graphics"
@@ -141,7 +141,7 @@ func (i *Image) apply() error {
 	}
 
 	if i.Blur > 0 {
-		err = i.scale()
+		err = i.blur()
 		if err != nil {
 			return err
 		}

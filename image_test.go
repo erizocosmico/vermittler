@@ -1,4 +1,4 @@
-package vermittler
+package main
 
 import (
 	"net/url"
