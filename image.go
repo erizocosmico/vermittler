@@ -11,7 +11,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 )
@@ -30,45 +29,40 @@ func ValidFormat(format string) bool {
 	return format == "png" || format == "jpeg" || format == "gif"
 }
 
-// Returns an Image given a filename
-func NewImageFromFile(filename string) (*Image, error) {
-	var data image.Image
-	var err error
-
-	img := &Image{
-		Width:  -1,
-		Height: -1,
-		Blur:   -1.0,
-	}
-
-	f, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	formatStrings := strings.Split(filename, ".")
-	img.Format = formatStrings[len(formatStrings)-1]
-
+func (img *Image) readImage(r io.Reader, remote bool) error {
+    var data image.Image
+    var err error
+    
 	switch img.Format {
 	case "png":
-		data, err = png.Decode(f)
+		data, err = png.Decode(r)
 		break
 
 	case "jpeg":
-		data, err = jpeg.Decode(f)
+		data, err = jpeg.Decode(r)
 		break
 
 	case "gif":
-		data, err = gif.Decode(f)
+		data, err = gif.Decode(r)
 		break
 	}
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	img.Data = data
-
-	return img, nil
+    
+    if remote {
+        if img.Width < 1 {
+            img.Width = int64(img.Data.Bounds().Max.X)
+        }
+        
+        if img.Height < 1 {
+            img.Height = int64(img.Data.Bounds().Max.Y)
+        }
+    }
+    
+    return nil
 }
 
 // Returns the image data for the specified parameters in the query string.
@@ -132,19 +126,18 @@ func NewImage(values url.Values) (*Image, error) {
 	if err != nil || res.StatusCode != 200 {
 		return nil, err
 	}
-
-	defer res.Body.Close()
-	data, _, err := image.Decode(res.Body)
-	if err != nil {
-		return nil, err
-	}
+    defer res.Body.Close()
 
 	formatStrings := strings.Split(res.Header.Get("Content-Type"), "/")
 	if len(formatStrings) != 2 && formatStrings[0] != "image" && ValidFormat(formatStrings[1]) {
 		return nil, errors.New("Invalid format. Expecting `image/jpeg`, `image/png` or `image/gif`")
 	}
 	img.Format = formatStrings[1]
-	img.Data = data
+    
+    err = img.readImage(res.Body, true)
+	if err != nil {
+		return nil, err
+	}
 
 	return img, nil
 }
