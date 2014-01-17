@@ -30,9 +30,9 @@ func ValidFormat(format string) bool {
 }
 
 func (img *Image) readImage(r io.Reader, remote bool) error {
-    var data image.Image
-    var err error
-    
+	var data image.Image
+	var err error
+
 	switch img.Format {
 	case "png":
 		data, err = png.Decode(r)
@@ -51,18 +51,18 @@ func (img *Image) readImage(r io.Reader, remote bool) error {
 	}
 
 	img.Data = data
-    
-    if remote {
-        if img.Width < 1 {
-            img.Width = int64(img.Data.Bounds().Max.X)
-        }
-        
-        if img.Height < 1 {
-            img.Height = int64(img.Data.Bounds().Max.Y)
-        }
-    }
-    
-    return nil
+
+	if remote {
+		if img.Width < 1 {
+			img.Width = int64(img.Data.Bounds().Max.X)
+		}
+
+		if img.Height < 1 {
+			img.Height = int64(img.Data.Bounds().Max.Y)
+		}
+	}
+
+	return nil
 }
 
 // Returns the image data for the specified parameters in the query string.
@@ -126,15 +126,15 @@ func NewImage(values url.Values) (*Image, error) {
 	if err != nil || res.StatusCode != 200 {
 		return nil, err
 	}
-    defer res.Body.Close()
+	defer res.Body.Close()
 
 	formatStrings := strings.Split(res.Header.Get("Content-Type"), "/")
 	if len(formatStrings) != 2 && formatStrings[0] != "image" && ValidFormat(formatStrings[1]) {
 		return nil, errors.New("Invalid format. Expecting `image/jpeg`, `image/png` or `image/gif`")
 	}
 	img.Format = formatStrings[1]
-    
-    err = img.readImage(res.Body, true)
+
+	err = img.readImage(res.Body, true)
 	if err != nil {
 		return nil, err
 	}

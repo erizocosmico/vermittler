@@ -1,7 +1,7 @@
 package main
 
 import (
-    "net/url"
+	"net/url"
 )
 
 func parseQueryString(query string) url.Values {

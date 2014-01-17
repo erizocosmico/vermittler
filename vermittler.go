@@ -36,7 +36,7 @@ func (v Vermittler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if format == "DS_Store" {
 			return
 		}
-		img, err = LoadImage(filename + "." + format, v.Cfg.CachePath)
+		img, err = LoadImage(filename+"."+format, v.Cfg.CachePath)
 	}
 
 	if err != nil {

@@ -33,16 +33,16 @@ func LoadImage(filename, cachePath string) (*Image, error) {
 		Blur:   -1.0,
 	}
 
-	f, err := os.Open(cachePath+"/"+filename)
+	f, err := os.Open(cachePath + "/" + filename)
 	if err != nil {
 		return nil, err
 	}
-    defer f.Close()
-    
+	defer f.Close()
+
 	formatStrings := strings.Split(filename, ".")
 	img.Format = formatStrings[len(formatStrings)-1]
-    
-    err = img.readImage(f, false)
+
+	err = img.readImage(f, false)
 	if err != nil {
 		return nil, err
 	}
