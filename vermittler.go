@@ -21,11 +21,16 @@ func (v Vermittler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	imageExists := false
 	if v.Cfg.CacheEnabled {
-		imageExists, format, err = FileInCache(filename, v.Cfg.CachePath)
+		imageExists, format, err = FileInCache(filename, v.Cfg)
 	}
 
 	if !imageExists || !v.Cfg.CacheEnabled {
 		img, err = NewImage(r.Form)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		err = img.Apply()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -36,7 +41,7 @@ func (v Vermittler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if format == "DS_Store" {
 			return
 		}
-		img, err = LoadImage(filename+"."+format, v.Cfg.CachePath)
+		img, err = LoadImage(filename+"."+format, v.Cfg)
 	}
 
 	if err != nil {
@@ -45,7 +50,7 @@ func (v Vermittler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if v.Cfg.CacheEnabled && !imageExists {
-		go CacheFile(v.Cfg.CachePath+"/"+filename+"."+img.Format, img)
+		go CacheFile(filename+"."+img.Format, img, v.Cfg)
 	}
 
 	w.Header().Add("Content-Type", "image/"+img.Format)

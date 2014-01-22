@@ -1,0 +1,6 @@
+{
+    "cache_enabled": true,
+    "cache_path": "/path/to/my/dir",
+    "port": "8888",
+    "verbose": true
+}
