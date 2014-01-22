@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// Returns if the file is in the cache path and if it is also returns the format of the image
+// FileInCache returns if the file is in the cache path and if it is also returns the format of the image
 func FileInCache(filename, cachePath string) (bool, string, error) {
 	files, err := ioutil.ReadDir(cachePath)
 	if err != nil {
@@ -23,7 +23,7 @@ func FileInCache(filename, cachePath string) (bool, string, error) {
 	return false, "", nil
 }
 
-// Loads an image from the cache
+// LoadImage loads an image from the cache
 func LoadImage(filename, cachePath string) (*Image, error) {
 	var err error
 
@@ -50,7 +50,7 @@ func LoadImage(filename, cachePath string) (*Image, error) {
 	return img, nil
 }
 
-// Stores the file in the cache path
+// CacheFile stores the file in the cache path
 func CacheFile(file string, img *Image) {
 	f, err := os.Create(file)
 	if err == nil {

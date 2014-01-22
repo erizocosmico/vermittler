@@ -1,6 +1,6 @@
 package main
 
-// App configuration.
+// Config contains the application settings
 type Config struct {
 	// Enable or disable the cache
 	CacheEnabled bool
@@ -10,7 +10,7 @@ type Config struct {
 	Port string
 }
 
-// Returns a fancy and very hardcoded config for our app.
+// NewConfig returns a fancy and very hardcoded config for our app.
 func NewConfig() *Config {
 	return &Config{
 		CacheEnabled: true,

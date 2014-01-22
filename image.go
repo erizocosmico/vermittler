@@ -15,6 +15,7 @@ import (
 	"strings"
 )
 
+// Image represents an image and its values and transformations.
 type Image struct {
 	Width, Height int64
 	Blur          float64
@@ -23,17 +24,17 @@ type Image struct {
 	Data          image.Image
 }
 
-// Checks if the format is valid or not.
+// ValidFormat checks if the format is valid or not.
 // TODO: Add webp format support
 func ValidFormat(format string) bool {
 	return format == "png" || format == "jpeg" || format == "gif"
 }
 
-func (img *Image) readImage(r io.Reader, remote bool) error {
+func (i *Image) readImage(r io.Reader, remote bool) error {
 	var data image.Image
 	var err error
 
-	switch img.Format {
+	switch i.Format {
 	case "png":
 		data, err = png.Decode(r)
 		break
@@ -50,22 +51,22 @@ func (img *Image) readImage(r io.Reader, remote bool) error {
 		return err
 	}
 
-	img.Data = data
+	i.Data = data
 
 	if remote {
-		if img.Width < 1 {
-			img.Width = int64(img.Data.Bounds().Max.X)
+		if i.Width < 1 {
+			i.Width = int64(i.Data.Bounds().Max.X)
 		}
 
-		if img.Height < 1 {
-			img.Height = int64(img.Data.Bounds().Max.Y)
+		if i.Height < 1 {
+			i.Height = int64(i.Data.Bounds().Max.Y)
 		}
 	}
 
 	return nil
 }
 
-// Returns the image data for the specified parameters in the query string.
+// NewImage returns the image data for the specified parameters in the query string.
 func NewImage(values url.Values) (*Image, error) {
 	var w, h, b, u string
 	var width, height int64
@@ -77,31 +78,31 @@ func NewImage(values url.Values) (*Image, error) {
 	u = values.Get("url")
 
 	if u == "" {
-		return nil, errors.New("Url not provided")
+		return nil, errors.New("url not provided")
 	}
 
 	URLBytes, err := base64.StdEncoding.DecodeString(u)
 	if err != nil {
-		return nil, errors.New("Provided url wasn't properly base64 encoded.")
+		return nil, errors.New("provided url wasn't properly base64 encoded")
 	}
 
-	parsedUrl, err := url.Parse(string(URLBytes))
+	parsedURL, err := url.Parse(string(URLBytes))
 	if err != nil {
-		return nil, errors.New("Provided url is not valid.")
+		return nil, errors.New("provided url is not valid")
 	}
 
 	img := &Image{
 		Width:  -1,
 		Height: -1,
 		Blur:   -1.0,
-		URL:    parsedUrl,
+		URL:    parsedURL,
 		Format: "",
 	}
 
 	if w != "" {
 		width, err = strconv.ParseInt(w, 10, 32)
 		if err != nil {
-			return nil, errors.New("Invalid width parameter provided.")
+			return nil, errors.New("invalid width parameter provided")
 		}
 		img.Width = width
 	}
@@ -109,7 +110,7 @@ func NewImage(values url.Values) (*Image, error) {
 	if h != "" {
 		height, err = strconv.ParseInt(h, 10, 32)
 		if err != nil {
-			return nil, errors.New("Invalid height parameter provided.")
+			return nil, errors.New("invalid height parameter provided")
 		}
 		img.Height = height
 	}
@@ -117,7 +118,7 @@ func NewImage(values url.Values) (*Image, error) {
 	if b != "" {
 		blur, err = strconv.ParseFloat(b, 32)
 		if err != nil {
-			return nil, errors.New("Invalid blur radius parameter provided.")
+			return nil, errors.New("invalid blur radius parameter provided")
 		}
 		img.Blur = blur
 	}
@@ -130,7 +131,7 @@ func NewImage(values url.Values) (*Image, error) {
 
 	formatStrings := strings.Split(res.Header.Get("Content-Type"), "/")
 	if len(formatStrings) != 2 && formatStrings[0] != "image" && ValidFormat(formatStrings[1]) {
-		return nil, errors.New("Invalid format. Expecting `image/jpeg`, `image/png` or `image/gif`")
+		return nil, errors.New("invalid format. Expecting `image/jpeg`, `image/png` or `image/gif`")
 	}
 	img.Format = formatStrings[1]
 
@@ -164,7 +165,7 @@ func (i *Image) scale() error {
 	return err
 }
 
-// Applies the needed transformations.
+// Apply applies the needed transformations.
 func (i *Image) Apply() error {
 	var err error
 
